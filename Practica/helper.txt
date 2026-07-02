@@ -1,0 +1,5 @@
+https://p2r3.github.io/convert/
+DOCX -> GFM
+
+Linux: mv Caiet_practica_model_3dpub2026.md README.md
+Windows: ren Caiet_practica_model_3dpub2026.md README.md
