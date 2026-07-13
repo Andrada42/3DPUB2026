@@ -5,11 +5,15 @@ public class BiomeMapGenerator : MonoBehaviour
     // private => nu ai acces din editor
     private Texture2D texture;
     private Vector2 octaveOffset;
-    private int seed;
+
 
     // public => ai acces din editor
-    [Header("Apply generated texture to renderer")]
+    [Header("Renderer")]
     public Renderer targetRenderer;
+
+    [Header("Seed")]
+    public bool generateSeed = true;
+    public int seed = 4247;
 
     [Header("Grid Dimensions")]
     [Range(16, 512)] public int width = 256;
@@ -31,7 +35,8 @@ public class BiomeMapGenerator : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        seed = Random.Range(0, 10000);
+        if (generateSeed)
+            seed = Random.Range(0, 10000);
         GenerateMap();
     }
 
@@ -40,7 +45,8 @@ public class BiomeMapGenerator : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            // seed = Random.Range(0, 10000);
+            if (generateSeed)
+                seed = Random.Range(0, 10000);
             GenerateMap();
         }
     }
