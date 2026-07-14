@@ -1,6 +1,7 @@
+using System.Diagnostics;
 using UnityEngine;
 
-public class BiomeMapGenerator : MonoBehaviour
+public class BiomeMapGenerator4 : MonoBehaviour
 {
     // private => nu ai acces din editor
     private Texture2D texture;
@@ -16,8 +17,8 @@ public class BiomeMapGenerator : MonoBehaviour
     public int seed = 4247;
 
     [Header("Grid Dimensions")]
-    [Range(16, 512)] public int width = 256;
-    [Range(16, 512)] public int height = 256;
+    [Range(16, 8192)] public int width = 256;
+    [Range(16, 8192)] public int height = 256;
 
     [Header("Biome Thresholds")]
     [Range(0.1f, 1.0f)] public float waterLevel = 0.35f;    // water between [0.0f, waterLevel]
@@ -30,6 +31,13 @@ public class BiomeMapGenerator : MonoBehaviour
     [Range(1, 50)] public int scale = 25;                   // zoom level
     public float lacunarity = 2.0f;
     public float persistence = 0.5f;
+
+    [Header("Biome Colors")]
+    public Color water = new Color(0.15f, 0.35f, 0.75f);
+    public Color sand = new Color(0.85f, 0.8f, 0.55f);
+    public Color grass = new Color(0.25f, 0.65f, 0.25f);
+    public Color rock = new Color(0.45f, 0.4f, 0.35f);
+    public Color snow = Color.white;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -49,8 +57,46 @@ public class BiomeMapGenerator : MonoBehaviour
                 seed = Random.Range(0, 10000);
             GenerateMap();
         }
+
+        if (Input.GetKeyDown(KeyCode.T))
+            RunPerformanceTest();
     }
 
+    public void RunPerformanceTest()
+    {
+        int originalWidth = width;
+        int originalHeight = height;
+        int originalSeed = seed;
+
+        int[] testSizes = { 128, 256, 512, 1024, 2048, 4096, 8192 };
+
+        UnityEngine.Debug.Log("<color=orange>======== START PERFORMANCE TEST ========</color>");
+
+        foreach (int size in testSizes)
+        {
+            width = size;
+            height = size;
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // OBS: lasam acelasi seed
+            GenerateMap();
+
+            stopwatch.Stop();
+
+            double timePassed = stopwatch.Elapsed.TotalSeconds;
+
+            UnityEngine.Debug.Log($" <b>Rezolutie:</b>\t{size} px\u00B2\n\t\t<b>Timp:</b>\t\t{timePassed} s");
+        }
+
+        width = originalWidth;
+        height = originalHeight;
+        seed = originalSeed;
+
+        UnityEngine.Debug.Log("<color=orange>======== END PERFORMANCE TEST ========</color>");
+
+    }
 
     public void GenerateMap()
     {
@@ -59,8 +105,8 @@ public class BiomeMapGenerator : MonoBehaviour
         texture.wrapMode = TextureWrapMode.Clamp;   // repeta ultimul rand pe pixeli de pe margini in loc de a face tiling
 
         System.Random rng = new System.Random(seed);
-        octaveOffset = new Vector2 (rng.Next(-10000, 10000), rng.Next(-10000, 10000));
-        
+        octaveOffset = new Vector2(rng.Next(-10000, 10000), rng.Next(-10000, 10000));
+
 
         for (int y = 0; y < height; y++)
         {
@@ -104,7 +150,7 @@ public class BiomeMapGenerator : MonoBehaviour
 
             amplitudeSum += amplitude;
 
-            amplitude *= persistence; 
+            amplitude *= persistence;
             frequency *= lacunarity;
         }
 
@@ -113,22 +159,17 @@ public class BiomeMapGenerator : MonoBehaviour
     public Color GetBiomeColor(float noiseValue)
     {
         if (noiseValue < waterLevel)
-        {
-            return new Color(0.15f, 0.35f, 0.75f);
-        }
+            return water;
+
         if (noiseValue < sandLevel)
-        {
-            return new Color(0.85f, 0.8f, 0.55f);
-        }
+            return sand;
+
         if (noiseValue < grassLevel)
-        {
-            return new Color(0.25f, 0.65f, 0.25f);
-        }
+            return grass;
+
         if (noiseValue < rockLevel)
-        {
-            return new Color(0.45f, 0.4f, 0.35f);
-        }
-        return Color.white;
-        
+            return rock;
+
+        return snow;
     }
 }
